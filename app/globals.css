@@ -2,6 +2,13 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
+.meeting-control { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 2.5rem; border-radius: 0.75rem; padding: 0.65rem 0.8rem; background: rgb(255 255 255 / 0.08); color: rgb(255 255 255 / 0.88); font-size: 0.75rem; font-weight: 700; transition: background-color 160ms ease, transform 160ms ease; }
+.meeting-control:hover { background: rgb(255 255 255 / 0.15); }
+.meeting-control:active { transform: scale(0.98); }
+.meeting-control-active { background: rgb(143 29 44 / 0.9); }
+@media (prefers-reduced-motion: reduce) { .meeting-control { transition: none; } }
+@media (max-width: 640px) { .meeting-control { padding: 0.7rem; } .meeting-control svg + * { display: none; } }
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
