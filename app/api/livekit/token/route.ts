@@ -9,10 +9,9 @@ import { meetings } from "@/lib/db/schema"
 
 export async function POST(request: Request) {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-
   const body = await request.json().catch(() => null)
   const roomName = typeof body?.roomName === "string" ? body.roomName.trim() : ""
+  const guestName = typeof body?.guestName === "string" ? body.guestName.trim().slice(0, 80) : ""
   if (!roomName || roomName.length > 120 || !/^[a-z0-9-]+$/i.test(roomName)) return NextResponse.json({ error: "Invalid meeting code" }, { status: 400 })
 
   const [meeting] = await db
@@ -28,8 +27,8 @@ export async function POST(request: Request) {
   }
 
   const token = new AccessToken(process.env.LIVEKIT_API_KEY, process.env.LIVEKIT_API_SECRET, {
-    identity: `${session.user.id}-${crypto.randomUUID()}`,
-    name: session.user.name,
+    identity: `${session?.user.id ?? "guest"}-${crypto.randomUUID()}`,
+    name: session?.user.name || guestName || "Guest",
     ttl: "1h",
   })
   token.addGrant({
