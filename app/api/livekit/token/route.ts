@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     room: roomName,
     canPublish: true,
     canSubscribe: true,
-    roomAdmin: meeting.ownerId === session.user.id,
+    roomAdmin: Boolean(session?.user && meeting.ownerId === session.user.id),
   })
 
   return NextResponse.json({ token: await token.toJwt(), url: livekitUrl }, { headers: { "Cache-Control": "no-store" } })

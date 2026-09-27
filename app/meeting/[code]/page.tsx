@@ -1,24 +1,14 @@
-import { eq } from "drizzle-orm"
 import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 
 import LiveKitRoomView from "@/components/livekit-room"
 import { auth } from "@/lib/auth"
-import { db } from "@/lib/db"
-import { meetings } from "@/lib/db/schema"
 
 export default async function MeetingPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params
   const decodedCode = decodeURIComponent(code).trim()
   if (!/^[a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{3}$/i.test(decodedCode)) notFound()
 
-  const [meeting] = await db
-    .select({ code: meetings.code })
-    .from(meetings)
-    .where(eq(meetings.code, decodedCode))
-    .limit(1)
-  if (!meeting) notFound()
-
   const session = await auth.api.getSession({ headers: await headers() })
-  return <LiveKitRoomView roomName={meeting.code} userName={session?.user.name || "Guest"} />
+  return <LiveKitRoomView roomName={decodedCode} userName={session?.user.name || "Guest"} />
 }
