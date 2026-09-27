@@ -29,7 +29,7 @@ export async function createMeeting(input: { title?: string; meetingDate?: strin
     meetingDate: input.meetingDate || now.toISOString().slice(0, 10),
     meetingTime: input.meetingTime || now.toTimeString().slice(0, 5),
     userId,
-    code: crypto.randomUUID().replace(/-/g, "").slice(0, 11).replace(/(.{3})(.{4})(.{3})/, "$1-$2-$3"),
+    code: crypto.randomUUID().replace(/-/g, "").slice(0, 10).replace(/(.{3})(.{4})(.{3})/, "$1-$2-$3"),
     attendees: 1,
     durationMinutes: 45,
   }).returning()
