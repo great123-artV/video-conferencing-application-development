@@ -1,0 +1,25 @@
+{
+  "name": "Meetly — Professional video meetings",
+  "short_name": "Meetly",
+  "description": "Secure, polished video meetings for teams and organizations around the world.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#07111F",
+  "background_color": "#07111F",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["business", "productivity", "communication"],
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "GET",
+    "params": { "title": "title", "text": "text", "url": "url" }
+  }
+}

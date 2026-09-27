@@ -1,11 +1,13 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import PwaExperience from '@/components/pwa-experience'
 
 export const metadata: Metadata = {
   title: "Meetly — Professional video meetings",
   description: "Secure, polished video meetings for teams and organizations around the world.",
   applicationName: "Meetly",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: "/icon.svg",
     apple: "/apple-icon.png",
@@ -34,6 +36,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         {children}
+        <PwaExperience />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
