@@ -18,10 +18,19 @@ export async function getMeetings() {
   return db.select().from(meetings).where(eq(meetings.userId, userId)).orderBy(desc(meetings.createdAt))
 }
 
-export async function createMeeting(input: { title: string; meetingDate: string; meetingTime: string; attendees?: number; durationMinutes?: number }) {
+export async function createMeeting(input: { title?: string; meetingDate?: string; meetingTime?: string; attendees?: number; durationMinutes?: number }) {
   const userId = await getUserId()
-  const code = crypto.randomUUID().slice(0, 11).replace(/-/g, "-")
-  const [meeting] = await db.insert(meetings).values({ ...input, userId, code, attendees: input.attendees ?? 1, durationMinutes: input.durationMinutes ?? 45 }).returning()
+  const code = crypto.randomUUID().replace(/-/g, "").slice(0, 11).replace(/(.{3})(.{4})(.{3})/, "$1-$2-$3")
+  const now = new Date()
+  const [meeting] = await db.insert(meetings).values({
+    title: input.title?.trim() || "Instant meeting",
+    meetingDate: input.meetingDate || now.toISOString().slice(0, 10),
+    meetingTime: input.meetingTime || now.toTimeString().slice(0, 5),
+    userId,
+    code,
+    attendees: input.attendees ?? 1,
+    durationMinutes: input.durationMinutes ?? 45,
+  }).returning()
   revalidatePath("/")
   return meeting
 }
