@@ -59,7 +59,32 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
   const [copied, setCopied] = useState(false)
   const router = useRouter()
 
-  function openMeeting(code: string) {
+  function normalizeMeetingCode(value: string) {
+    const trimmed = value.trim()
+    if (!trimmed) return ""
+
+    try {
+      const parsed = new URL(trimmed)
+      const meetingSegment = parsed.pathname.split("/").filter(Boolean)
+      const meetingIndex = meetingSegment.findIndex((segment) => segment.toLowerCase() === "meeting")
+      if (meetingIndex >= 0 && meetingSegment[meetingIndex + 1]) {
+        return decodeURIComponent(meetingSegment[meetingIndex + 1]).trim().toLowerCase()
+      }
+    } catch {
+      // Treat non-URL input as a meeting code.
+    }
+
+    return trimmed.replace(/^\/?meeting\//i, "").split(/[?#]/, 1)[0].trim().toLowerCase()
+  }
+
+  function openMeeting(value: string) {
+    const code = normalizeMeetingCode(value)
+    if (!/^[a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{3}$/i.test(code)) {
+      setFormError("Enter a valid meeting code or paste a complete meeting link.")
+      return
+    }
+    setJoinOpen(false)
+    setJoinCode("")
     router.push(`/meeting/${encodeURIComponent(code)}`)
   }
 
