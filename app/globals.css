@@ -7,6 +7,9 @@
 .meeting-control:active { transform: scale(0.98); }
 .meeting-control-active { background: rgb(143 29 44 / 0.9); }
 @media (prefers-reduced-motion: reduce) { .meeting-control { transition: none; } }
+@keyframes reaction-float-up { 0% { opacity: 0; transform: translateY(18px) scale(0.86); } 15% { opacity: 1; transform: translateY(0) scale(1); } 78% { opacity: 1; transform: translateY(-10px) scale(1); } 100% { opacity: 0; transform: translateY(-28px) scale(0.96); } }
+.reaction-float { animation: reaction-float-up 2.2s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .reaction-float { animation: none; } }
 @media (max-width: 640px) { .meeting-control { padding: 0.7rem; } .meeting-control svg + * { display: none; } }
 
 @custom-variant dark (&:is(.dark *));
