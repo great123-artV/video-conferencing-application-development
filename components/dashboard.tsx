@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   CalendarDays,
   ChevronDown,
@@ -49,6 +50,11 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
   const [cameraOn, setCameraOn] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const router = useRouter()
+
+  function openMeeting(code: string) {
+    router.push(`/meeting/${encodeURIComponent(code)}`)
+  }
 
   const initials = useMemo(() => user.name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase(), [user.name])
 
@@ -134,7 +140,7 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#f6cacc]">Next up · In 24 minutes</p>
                   <h2 className="mt-4 text-2xl font-bold tracking-[-0.035em]">Weekly design critique</h2>
                   <div className="mt-3 flex items-center gap-2 text-sm text-[#f5dfe0]"><Clock3 className="size-4" />10:00 AM – 10:45 AM <span className="text-[#ddaeb2]">·</span> <Users className="size-4" />8 people</div>
-                  <div className="mt-7 flex items-center gap-3"><button className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#8f1d2c] transition hover:bg-[#fff3f3]">Join now</button><button onClick={() => copyLink("bqz-hxkp-nrm")} className="rounded-xl border border-white/30 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/10" aria-label="Copy meeting link"><Copy className="mr-2 inline size-4" />{copied ? "Copied" : "Copy link"}</button></div>
+                  <div className="mt-7 flex items-center gap-3"><button onClick={() => openMeeting("bqz-hxkp-nrm")} className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#8f1d2c] transition hover:bg-[#fff3f3]">Join now</button><button onClick={() => copyLink("bqz-hxkp-nrm")} className="rounded-xl border border-white/30 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/10" aria-label="Copy meeting link"><Copy className="mr-2 inline size-4" />{copied ? "Copied" : "Copy link"}</button></div>
                 </div>
                 <div className="absolute -right-10 -top-12 size-56 rounded-full border-[24px] border-white/10" /><div className="absolute -bottom-24 right-20 size-64 rounded-full border-[28px] border-white/10" />
               </div>
@@ -156,7 +162,7 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
         </section>
       </div>
 
-      {joinOpen && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2937]/40 p-5" role="dialog" aria-modal="true" aria-labelledby="join-title"><div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between"><div><h2 id="join-title" className="text-xl font-bold text-[#2d333d]">Join a meeting</h2><p className="mt-1 text-sm text-[#8a919e]">Enter the meeting code shared by your host.</p></div><button onClick={() => setJoinOpen(false)} className="rounded-lg p-2 text-[#9299a5] hover:bg-[#f3f4f5]" aria-label="Close dialog"><X className="size-5" /></button></div><label htmlFor="meeting-code" className="mt-7 block text-xs font-bold text-[#596170]">Meeting code</label><input id="meeting-code" autoFocus value={joinCode} onChange={(event) => setJoinCode(event.target.value)} placeholder="xxx-xxxx-xxx" className="mt-2 h-12 w-full rounded-xl border border-[#dfe1e6] px-4 text-sm font-medium outline-none transition focus:border-[#8f1d2c] focus:ring-2 focus:ring-[#8f1d2c]/10" /><button disabled={!joinCode.trim()} className="mt-5 flex h-12 w-full items-center justify-center rounded-xl bg-[#8f1d2c] text-sm font-bold text-white transition hover:bg-[#791725] disabled:cursor-not-allowed disabled:opacity-50">Continue to preview</button><p className="mt-4 text-center text-xs text-[#9ca2ad]">You can also paste a full Meetly link.</p></div></div>}
+      {joinOpen && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2937]/40 p-5" role="dialog" aria-modal="true" aria-labelledby="join-title"><div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between"><div><h2 id="join-title" className="text-xl font-bold text-[#2d333d]">Join a meeting</h2><p className="mt-1 text-sm text-[#8a919e]">Enter the meeting code shared by your host.</p></div><button onClick={() => setJoinOpen(false)} className="rounded-lg p-2 text-[#9299a5] hover:bg-[#f3f4f5]" aria-label="Close dialog"><X className="size-5" /></button></div><label htmlFor="meeting-code" className="mt-7 block text-xs font-bold text-[#596170]">Meeting code</label><input id="meeting-code" autoFocus value={joinCode} onChange={(event) => setJoinCode(event.target.value)} placeholder="xxx-xxxx-xxx" className="mt-2 h-12 w-full rounded-xl border border-[#dfe1e6] px-4 text-sm font-medium outline-none transition focus:border-[#8f1d2c] focus:ring-2 focus:ring-[#8f1d2c]/10" /><button onClick={() => openMeeting(joinCode.trim())} disabled={!joinCode.trim()} className="mt-5 flex h-12 w-full items-center justify-center rounded-xl bg-[#8f1d2c] text-sm font-bold text-white transition hover:bg-[#791725] disabled:cursor-not-allowed disabled:opacity-50">Continue to preview</button><p className="mt-4 text-center text-xs text-[#9ca2ad]">You can also paste a full Meetly link.</p></div></div>}
 
       <div className="fixed bottom-5 right-5 hidden items-center gap-2 rounded-full border border-[#e8e9ed] bg-white px-3 py-2 text-xs font-semibold text-[#7d8592] shadow-lg sm:flex"><span className="size-2 rounded-full bg-[#4d9273]" />All systems operational</div>
       <div className="sr-only"><button onClick={() => setMicOn(!micOn)}>{micOn ? <Mic /> : <MicOff />}</button><button onClick={() => setCameraOn(!cameraOn)}>{cameraOn ? <Video /> : <VideoOff />}</button><Grid2X2 /><Headphones /><Search /></div>
