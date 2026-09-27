@@ -19,14 +19,31 @@ export default function LiveKitRoomView({ roomName, userName }: { roomName: stri
   const [error, setError] = useState<string>()
 
   useEffect(() => {
-    fetch("/api/livekit/token", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ roomName }) })
+    const controller = new AbortController()
+    setToken(undefined)
+    setServerUrl(undefined)
+    setError(undefined)
+
+    fetch("/api/livekit/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomName }),
+      signal: controller.signal,
+      cache: "no-store",
+    })
       .then(async (response) => {
-        const data = await response.json()
+        const data = await response.json().catch(() => ({}))
         if (!response.ok) throw new Error(data.error || "Unable to join meeting")
+        if (typeof data.token !== "string" || typeof data.url !== "string") throw new Error("Invalid video service response")
         setToken(data.token)
         setServerUrl(data.url)
       })
-      .catch((reason) => setError(reason instanceof Error ? reason.message : "Unable to join meeting"))
+      .catch((reason) => {
+        if (reason instanceof DOMException && reason.name === "AbortError") return
+        setError(reason instanceof Error ? reason.message : "Unable to join meeting")
+      })
+
+    return () => controller.abort()
   }, [roomName])
 
   if (error) return <div className="flex min-h-screen items-center justify-center bg-[#17181c] p-6 text-center text-white"><div><h1 className="text-xl font-bold">Unable to join meeting</h1><p className="mt-2 text-sm text-white/60">{error}</p><a className="mt-6 inline-block rounded-lg bg-[#8f1d2c] px-4 py-2 text-sm font-semibold" href="/">Return to dashboard</a></div></div>

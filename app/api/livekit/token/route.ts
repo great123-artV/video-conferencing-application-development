@@ -15,20 +15,30 @@ export async function POST(request: Request) {
   const roomName = typeof body?.roomName === "string" ? body.roomName.trim() : ""
   if (!roomName || roomName.length > 120 || !/^[a-z0-9-]+$/i.test(roomName)) return NextResponse.json({ error: "Invalid meeting code" }, { status: 400 })
 
-  const [meeting] = await db.select({ id: meetings.id }).from(meetings).where(eq(meetings.code, roomName)).limit(1)
+  const [meeting] = await db
+    .select({ id: meetings.id, ownerId: meetings.userId })
+    .from(meetings)
+    .where(eq(meetings.code, roomName))
+    .limit(1)
   if (!meeting) return NextResponse.json({ error: "Meeting not found" }, { status: 404 })
 
-  const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL || process.env.LIVEKIT_URL
+  const livekitUrl = process.env.LIVEKIT_URL || process.env.NEXT_PUBLIC_LIVEKIT_URL
   if (!process.env.LIVEKIT_API_KEY || !process.env.LIVEKIT_API_SECRET || !livekitUrl) {
     return NextResponse.json({ error: "Video service is not configured" }, { status: 503 })
   }
 
   const token = new AccessToken(process.env.LIVEKIT_API_KEY, process.env.LIVEKIT_API_SECRET, {
-    identity: session.user.id,
+    identity: `${session.user.id}-${crypto.randomUUID()}`,
     name: session.user.name,
-    ttl: "2h",
+    ttl: "1h",
   })
-  token.addGrant({ roomJoin: true, room: roomName, canPublish: true, canSubscribe: true })
+  token.addGrant({
+    roomJoin: true,
+    room: roomName,
+    canPublish: true,
+    canSubscribe: true,
+    roomAdmin: meeting.ownerId === session.user.id,
+  })
 
-  return NextResponse.json({ token: await token.toJwt(), url: livekitUrl })
+  return NextResponse.json({ token: await token.toJwt(), url: livekitUrl }, { headers: { "Cache-Control": "no-store" } })
 }

@@ -12,6 +12,7 @@ export default async function MeetingPage({ params }: { params: Promise<{ code: 
   if (!session?.user) redirect(`/sign-in?redirect=/meeting/${(await params).code}`)
   const { code } = await params
   const decodedCode = decodeURIComponent(code).trim()
+  if (!/^[a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{3}$/i.test(decodedCode)) notFound()
   const [meeting] = await db.select({ code: meetings.code }).from(meetings).where(eq(meetings.code, decodedCode)).limit(1)
   if (!meeting) notFound()
   return <LiveKitRoomView roomName={meeting.code} userName={session.user.name} />

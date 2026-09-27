@@ -20,23 +20,27 @@ export async function getMeetings() {
 
 export async function createMeeting(input: { title?: string; meetingDate?: string; meetingTime?: string; attendees?: number; durationMinutes?: number }) {
   const userId = await getUserId()
-  const code = crypto.randomUUID().replace(/-/g, "").slice(0, 11).replace(/(.{3})(.{4})(.{3})/, "$1-$2-$3")
+  const title = input.title?.trim() || "Instant meeting"
+  if (title.length > 120) throw new Error("Meeting title is too long")
+
   const now = new Date()
   const [meeting] = await db.insert(meetings).values({
-    title: input.title?.trim() || "Instant meeting",
+    title,
     meetingDate: input.meetingDate || now.toISOString().slice(0, 10),
     meetingTime: input.meetingTime || now.toTimeString().slice(0, 5),
     userId,
-    code,
-    attendees: input.attendees ?? 1,
-    durationMinutes: input.durationMinutes ?? 45,
+    code: crypto.randomUUID().replace(/-/g, "").slice(0, 11).replace(/(.{3})(.{4})(.{3})/, "$1-$2-$3"),
+    attendees: 1,
+    durationMinutes: 45,
   }).returning()
+  if (!meeting) throw new Error("Unable to create meeting")
   revalidatePath("/")
   return meeting
 }
 
 export async function deleteMeeting(id: number) {
   const userId = await getUserId()
+  if (!Number.isInteger(id) || id < 1) throw new Error("Invalid meeting")
   await db.delete(meetings).where(and(eq(meetings.id, id), eq(meetings.userId, userId)))
   revalidatePath("/")
 }
