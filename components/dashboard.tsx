@@ -1,7 +1,10 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import type { FormEvent } from "react"
 import { useRouter } from "next/navigation"
+import { createMeeting } from "@/app/actions/meetings"
+import { authClient } from "@/lib/auth-client"
 import {
   CalendarDays,
   ChevronDown,
@@ -45,7 +48,13 @@ const navItems = [
 export default function Dashboard({ user, meetings }: DashboardProps) {
   const [activeNav, setActiveNav] = useState("Overview")
   const [joinOpen, setJoinOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
   const [joinCode, setJoinCode] = useState("")
+  const [meetingTitle, setMeetingTitle] = useState("")
+  const [meetingDate, setMeetingDate] = useState("")
+  const [meetingTime, setMeetingTime] = useState("")
+  const [creating, setCreating] = useState(false)
+  const [formError, setFormError] = useState("")
   const [micOn, setMicOn] = useState(true)
   const [cameraOn, setCameraOn] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -59,9 +68,27 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
   const initials = useMemo(() => user.name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase(), [user.name])
 
   function copyLink(code: string) {
-    navigator.clipboard?.writeText(`meetly.app/${code}`)
+    navigator.clipboard?.writeText(`${window.location.origin}/meeting/${code}`)
     setCopied(true)
     window.setTimeout(() => setCopied(false), 1600)
+  }
+
+  async function handleCreateMeeting(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setCreating(true)
+    setFormError("")
+    try {
+      const meeting = await createMeeting({ title: meetingTitle.trim(), meetingDate, meetingTime })
+      setCreateOpen(false)
+      setMeetingTitle("")
+      setMeetingDate("")
+      setMeetingTime("")
+      router.push(`/meeting/${encodeURIComponent(meeting.code)}`)
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Unable to create meeting")
+    } finally {
+      setCreating(false)
+    }
   }
 
   return (
@@ -115,7 +142,7 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
                 <p className="mt-1 text-xs leading-5 text-[#8c7374]">Try smart notes on your next call.</p>
                 <button className="mt-3 text-xs font-bold text-[#8f1d2c]">Learn more <span aria-hidden="true">→</span></button>
               </div>
-              <button className="mt-6 flex items-center gap-3 px-3 text-sm font-semibold text-[#8b929e] hover:text-[#8f1d2c]"><LogOut className="size-[17px]" />Sign out</button>
+              <button onClick={() => authClient.signOut({ fetchOptions: { onSuccess: () => router.push("/sign-in") } })} className="mt-6 flex items-center gap-3 px-3 text-sm font-semibold text-[#8b929e] hover:text-[#8f1d2c]"><LogOut className="size-[17px]" />Sign out</button>
             </div>
           </nav>
         </aside>
@@ -130,7 +157,7 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
               </div>
               <div className="flex gap-3">
                 <button onClick={() => setJoinOpen(true)} className="flex h-11 items-center justify-center gap-2 rounded-xl border border-[#dfe1e6] bg-white px-4 text-sm font-bold text-[#3b4250] shadow-sm transition hover:border-[#c7cbd3] hover:bg-[#fafafa]"><Link2 className="size-4" />Join meeting</button>
-                <button onClick={() => setJoinOpen(true)} className="flex h-11 items-center justify-center gap-2 rounded-xl bg-[#8f1d2c] px-4 text-sm font-bold text-white shadow-[0_5px_14px_rgba(143,29,44,0.2)] transition hover:bg-[#791725]"><Plus className="size-4" />New meeting</button>
+                <button onClick={() => setCreateOpen(true)} className="flex h-11 items-center justify-center gap-2 rounded-xl bg-[#8f1d2c] px-4 text-sm font-bold text-white shadow-[0_5px_14px_rgba(143,29,44,0.2)] transition hover:bg-[#791725]"><Plus className="size-4" />New meeting</button>
               </div>
             </div>
 
@@ -161,6 +188,8 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
           </div>
         </section>
       </div>
+
+      {createOpen && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2937]/40 p-5" role="dialog" aria-modal="true" aria-labelledby="create-title"><form onSubmit={handleCreateMeeting} className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between"><div><h2 id="create-title" className="text-xl font-bold text-[#2d333d]">New meeting</h2><p className="mt-1 text-sm text-[#8a919e]">Create a room and invite your team.</p></div><button type="button" onClick={() => setCreateOpen(false)} className="rounded-lg p-2 text-[#9299a5] hover:bg-[#f3f4f5]" aria-label="Close dialog"><X className="size-5" /></button></div><label htmlFor="meeting-title" className="mt-7 block text-xs font-bold text-[#596170]">Meeting title</label><input id="meeting-title" required value={meetingTitle} onChange={(event) => setMeetingTitle(event.target.value)} placeholder="Weekly team sync" className="mt-2 h-12 w-full rounded-xl border border-[#dfe1e6] px-4 text-sm outline-none focus:border-[#8f1d2c]" /><div className="mt-4 grid grid-cols-2 gap-3"><div><label htmlFor="meeting-date" className="block text-xs font-bold text-[#596170]">Date</label><input id="meeting-date" required type="date" value={meetingDate} onChange={(event) => setMeetingDate(event.target.value)} className="mt-2 h-11 w-full rounded-xl border border-[#dfe1e6] px-3 text-sm" /></div><div><label htmlFor="meeting-time" className="block text-xs font-bold text-[#596170]">Time</label><input id="meeting-time" required type="time" value={meetingTime} onChange={(event) => setMeetingTime(event.target.value)} className="mt-2 h-11 w-full rounded-xl border border-[#dfe1e6] px-3 text-sm" /></div></div>{formError && <p className="mt-3 text-sm text-[#a52a38]" role="alert">{formError}</p>}<button disabled={creating} className="mt-5 h-12 w-full rounded-xl bg-[#8f1d2c] text-sm font-bold text-white disabled:opacity-50">{creating ? "Creating…" : "Create meeting"}</button></form></div>}
 
       {joinOpen && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2937]/40 p-5" role="dialog" aria-modal="true" aria-labelledby="join-title"><div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between"><div><h2 id="join-title" className="text-xl font-bold text-[#2d333d]">Join a meeting</h2><p className="mt-1 text-sm text-[#8a919e]">Enter the meeting code shared by your host.</p></div><button onClick={() => setJoinOpen(false)} className="rounded-lg p-2 text-[#9299a5] hover:bg-[#f3f4f5]" aria-label="Close dialog"><X className="size-5" /></button></div><label htmlFor="meeting-code" className="mt-7 block text-xs font-bold text-[#596170]">Meeting code</label><input id="meeting-code" autoFocus value={joinCode} onChange={(event) => setJoinCode(event.target.value)} placeholder="xxx-xxxx-xxx" className="mt-2 h-12 w-full rounded-xl border border-[#dfe1e6] px-4 text-sm font-medium outline-none transition focus:border-[#8f1d2c] focus:ring-2 focus:ring-[#8f1d2c]/10" /><button onClick={() => openMeeting(joinCode.trim())} disabled={!joinCode.trim()} className="mt-5 flex h-12 w-full items-center justify-center rounded-xl bg-[#8f1d2c] text-sm font-bold text-white transition hover:bg-[#791725] disabled:cursor-not-allowed disabled:opacity-50">Continue to preview</button><p className="mt-4 text-center text-xs text-[#9ca2ad]">You can also paste a full Meetly link.</p></div></div>}
 
