@@ -189,9 +189,10 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
                 <h1 className="text-[30px] font-bold tracking-[-0.045em] text-[#242832] sm:text-[36px]">Welcome back, {user.name.split(" ")[0]} <span aria-hidden="true">✦</span></h1>
                 <p className="mt-2 text-sm text-[#7b8391]">Ready to connect with your team?</p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <button onClick={() => setJoinOpen(true)} className="flex h-11 items-center justify-center gap-2 rounded-xl border border-[#dfe1e6] bg-white px-4 text-sm font-bold text-[#3b4250] shadow-sm transition hover:border-[#c7cbd3] hover:bg-[#fafafa]"><Link2 className="size-4" />Join meeting</button>
                 <button onClick={() => setCreateOpen(true)} className="flex h-11 items-center justify-center gap-2 rounded-xl bg-[#4f7cff] px-4 text-sm font-bold text-white shadow-[0_5px_14px_rgba(143,29,44,0.2)] transition hover:bg-[#791725]"><Plus className="size-4" />New meeting</button>
+                <button onClick={() => authClient.signOut({ fetchOptions: { onSuccess: () => { router.push("/sign-in"); router.refresh() } } })} className="flex h-11 items-center justify-center gap-2 rounded-xl border border-[#f0d4d8] bg-[#fff8f8] px-4 text-sm font-bold text-[#a52a38] transition hover:bg-[#fff0f1]" aria-label="Sign out of Meetly"><LogOut className="size-4" />Sign out</button>
               </div>
             </div>
 
