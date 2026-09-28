@@ -13,16 +13,6 @@ export default function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const [pending, setPending] = useState(false)
   const isSignUp = mode === "sign-up"
 
-  async function signInWithGoogle() {
-    setPending(true)
-    setError("")
-    const result = await authClient.signIn.social({ provider: "google", callbackURL: "/" })
-    if (result.error) {
-      setPending(false)
-      setError("Google sign-in is unavailable right now. Please try again.")
-    }
-  }
-
   async function submit(event: React.FormEvent) {
     event.preventDefault()
     setPending(true); setError("")
@@ -46,8 +36,6 @@ export default function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
       <label className="text-sm font-semibold text-[#344054]">Password<input required minLength={8} type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2 h-12 w-full rounded-xl border border-[#d0d5dd] bg-[#f8fafc] px-3 outline-none transition focus:border-[#4f7cff] focus:ring-4 focus:ring-[#4f7cff]/10" /></label>
       {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
       <button disabled={pending} className="h-12 rounded-xl bg-gradient-to-r from-[#4f7cff] to-[#7c5cff] text-sm font-bold text-white shadow-lg shadow-[#4f7cff]/20 transition hover:brightness-105 disabled:opacity-50">{pending ? "Please wait…" : isSignUp ? "Create account" : "Sign in"}</button>
-      <div className="relative flex items-center gap-3 py-1"><span className="h-px flex-1 bg-[#eaecf0]" /><span className="text-xs font-medium text-[#98a2b3]">or</span><span className="h-px flex-1 bg-[#eaecf0]" /></div>
-      <button type="button" onClick={signInWithGoogle} disabled={pending} className="flex h-12 items-center justify-center gap-3 rounded-xl border border-[#d0d5dd] bg-white text-sm font-semibold text-[#344054] transition hover:bg-[#f8fafc] disabled:opacity-50"><span aria-hidden="true" className="text-base font-bold text-[#4285f4]">G</span>Continue with Google</button>
       <a href={isSignUp ? "/sign-in" : "/sign-up"} className="text-center text-sm font-semibold text-[#4f7cff] hover:text-[#7c5cff]">{isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}</a>
     </form>
   </div>

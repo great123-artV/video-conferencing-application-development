@@ -56,6 +56,7 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
   const [micOn, setMicOn] = useState(true)
   const [cameraOn, setCameraOn] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const router = useRouter()
 
@@ -144,7 +145,7 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
           </div>
           <div className="flex items-center gap-3">
             <button className="hidden rounded-full p-2.5 text-[#737b8c] transition hover:bg-[#f3f4f6] sm:block" aria-label="Help"><HelpCircle className="size-5" /></button>
-            <button className="hidden rounded-full p-2.5 text-[#737b8c] transition hover:bg-[#f3f4f6] sm:block" aria-label="Settings"><Settings className="size-5" /></button>
+            <button onClick={() => setSettingsOpen(true)} className="rounded-full p-2.5 text-[#737b8c] transition hover:bg-[#f3f4f6]" aria-label="Open settings"><Settings className="size-5" /></button>
             <div className="mx-1 hidden h-7 w-px bg-[#e8e9ed] sm:block" />
             <button className="flex items-center gap-2 rounded-full pl-1 pr-2 transition hover:bg-[#f5f5f6]" aria-label="Open profile menu">
               <span className="flex size-9 items-center justify-center rounded-full bg-[#f3d9d7] text-xs font-bold text-[#4f7cff]">{initials}</span>
@@ -176,7 +177,6 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
                 <p className="mt-1 text-xs leading-5 text-[#8c7374]">Try smart notes on your next call.</p>
                 <button className="mt-3 text-xs font-bold text-[#4f7cff]">Learn more <span aria-hidden="true">→</span></button>
               </div>
-              <button onClick={() => authClient.signOut({ fetchOptions: { onSuccess: () => router.push("/sign-in") } })} className="mt-6 flex items-center gap-3 px-3 text-sm font-semibold text-[#8b929e] hover:text-[#4f7cff]"><LogOut className="size-[17px]" />Sign out</button>
             </div>
           </nav>
         </aside>
@@ -192,7 +192,6 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
               <div className="flex flex-wrap gap-3">
                 <button onClick={() => setJoinOpen(true)} className="flex h-11 items-center justify-center gap-2 rounded-xl border border-[#dfe1e6] bg-white px-4 text-sm font-bold text-[#3b4250] shadow-sm transition hover:border-[#c7cbd3] hover:bg-[#fafafa]"><Link2 className="size-4" />Join meeting</button>
                 <button onClick={() => setCreateOpen(true)} className="flex h-11 items-center justify-center gap-2 rounded-xl bg-[#4f7cff] px-4 text-sm font-bold text-white shadow-[0_5px_14px_rgba(143,29,44,0.2)] transition hover:bg-[#791725]"><Plus className="size-4" />New meeting</button>
-                <button onClick={() => authClient.signOut({ fetchOptions: { onSuccess: () => { router.push("/sign-in"); router.refresh() } } })} className="flex h-11 items-center justify-center gap-2 rounded-xl border border-[#f0d4d8] bg-[#fff8f8] px-4 text-sm font-bold text-[#a52a38] transition hover:bg-[#fff0f1]" aria-label="Sign out of Meetly"><LogOut className="size-4" />Sign out</button>
               </div>
             </div>
 
@@ -217,6 +216,7 @@ export default function Dashboard({ user, meetings }: DashboardProps) {
 
       {joinOpen && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2937]/40 p-5" role="dialog" aria-modal="true" aria-labelledby="join-title"><div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between"><div><h2 id="join-title" className="text-xl font-bold text-[#2d333d]">Join a meeting</h2><p className="mt-1 text-sm text-[#8a919e]">Enter the meeting code shared by your host.</p></div><button onClick={() => setJoinOpen(false)} className="rounded-lg p-2 text-[#9299a5] hover:bg-[#f3f4f5]" aria-label="Close dialog"><X className="size-5" /></button></div><label htmlFor="meeting-code" className="mt-7 block text-xs font-bold text-[#596170]">Meeting code</label><input id="meeting-code" autoFocus value={joinCode} onChange={(event) => setJoinCode(event.target.value)} placeholder="xxx-xxxx-xxx" className="mt-2 h-12 w-full rounded-xl border border-[#dfe1e6] px-4 text-sm font-medium outline-none transition focus:border-[#4f7cff] focus:ring-2 focus:ring-[#4f7cff]/10" /><button onClick={() => openMeeting(joinCode.trim())} disabled={!joinCode.trim()} className="mt-5 flex h-12 w-full items-center justify-center rounded-xl bg-[#4f7cff] text-sm font-bold text-white transition hover:bg-[#791725] disabled:cursor-not-allowed disabled:opacity-50">Continue to preview</button><p className="mt-4 text-center text-xs text-[#9ca2ad]">You can also paste a full Meetly link.</p></div></div>}
 
+      {settingsOpen && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2937]/40 p-5" role="dialog" aria-modal="true" aria-labelledby="settings-title"><div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between"><div><h2 id="settings-title" className="text-xl font-bold text-[#2d333d]">Settings</h2><p className="mt-1 text-sm text-[#8a919e]">Manage your Meetly workspace session.</p></div><button onClick={() => setSettingsOpen(false)} className="rounded-lg p-2 text-[#9299a5] hover:bg-[#f3f4f5]" aria-label="Close settings"><X className="size-5" /></button></div><div className="mt-6 rounded-xl border border-[#e8e9ed] p-4"><p className="text-sm font-bold text-[#343a46]">Signed in as</p><p className="mt-1 text-sm text-[#7b8391]">{user.email}</p></div><button onClick={() => authClient.signOut({ fetchOptions: { onSuccess: () => { router.push("/sign-in"); router.refresh() } } })} className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#fff1f2] text-sm font-bold text-[#a52a38] transition hover:bg-[#ffe4e6]"><LogOut className="size-4" />Sign out</button></div></div>}
       <div className="fixed bottom-5 right-5 hidden items-center gap-2 rounded-full border border-[#e8e9ed] bg-white px-3 py-2 text-xs font-semibold text-[#7d8592] shadow-lg sm:flex"><span className="size-2 rounded-full bg-[#4d9273]" />All systems operational</div>
       <div className="sr-only"><button onClick={() => setMicOn(!micOn)}>{micOn ? <Mic /> : <MicOff />}</button><button onClick={() => setCameraOn(!cameraOn)}>{cameraOn ? <Video /> : <VideoOff />}</button><Grid2X2 /><Headphones /><Search /></div>
     </main>
